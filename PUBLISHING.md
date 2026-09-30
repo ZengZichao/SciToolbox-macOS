@@ -61,9 +61,9 @@ Zenodo 已归档并 mint DOI，详见下方"Zenodo 归档与 DOI"。
 `.dmg` 与 `.sha256.txt` 由 `.github/workflows/release.yml` 在 Release 发布后自动构建上传，
 **不需要**手动传；源码归档（`tar.gz` / `zip`）由 GitHub 从 tag 自动生成。
 
-> ⚠️ **校验和只能最后回填。** 任何一次移动 `v<版本>` 标签都会重新触发构建并覆盖 `.dmg`，
-> 产物字节随之改变，正文里预先写死的校验和立刻失效（本项目实际踩过：用户按说明执行
-> `shasum -c` 会失败）。回填完成后就不要再动这个标签。
+> ⚠️ **校验和只能最后回填。** 任何一次重新发布 release、移动 `v<版本>` 标签、或重跑 Release workflow
+> 都会重新构建并覆盖 `.dmg`，产物字节随之改变，正文里预先写死的校验和立刻失效
+> （本项目实际踩过：用户按说明执行 `shasum -c` 会失败）。回填完成后就不要再动这个标签。
 
 ## Zenodo 归档与 DOI
 
@@ -81,8 +81,11 @@ Zenodo 已归档并 mint DOI，详见下方"Zenodo 归档与 DOI"。
   gh api -X PATCH repos/ZengZichao/SciToolbox-macOS/releases/<release-id> -F draft=true
   gh api -X PATCH repos/ZengZichao/SciToolbox-macOS/releases/<release-id> -F draft=false
   ```
-  tag、版本号、资源 ID、下载链接都不变；但 GitHub 显示的发布日期会刷新成重新发布那天（改不回来），
-  Zenodo 记录的出版日可在草稿发布前手工填成真实发版日。
+  tag、版本号、下载 URL 都不变（但资源 ID 会因 CI 重新上传而变化）；GitHub 显示的发布日期会刷新成
+  重新发布那天（改不回来），Zenodo 记录的出版日可在草稿发布前手工填成真实发版日。
+  ⚠️ **这一招会重跑 `.github/workflows/release.yml`**（它的触发条件正是 `release: [published]`），
+  `.dmg` 会被重新构建并覆盖上传：资源 ID 和校验和都会变（sidecar 由 CI 自动重算，但正文里手写的
+  预期 SHA-256 必须按第 4 步重新回填）。v1.0.0 实测：`793614a3…` → `02308242…`。
 
 ## 给审稿人/用户的关键提示
 - **平台限制**：SciToolbox 目前仅支持 macOS 15+（SwiftUI）。若计划投 JOSS 等需审稿人可运行/复现的期刊，请在投稿前说明此限制，或提供录屏/构建说明；更彻底的作法是把与 GUI 无关的核心（`ToolProvider` / `APIClient` / `AccessionRouter`）抽成跨平台 Swift 包或 CLI。
