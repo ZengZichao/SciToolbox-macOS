@@ -5,7 +5,7 @@
 **当前状态**：仓库已创建并推送 → <https://github.com/ZengZichao/SciToolbox>（Public）。
 GitHub Pages 已启用（`main` / `/docs`），隐私政策与支持页已上线。
 `v1.0.0` 已打 tag 并发布 GitHub Release，`.dmg` 由 `.github/workflows/release.yml` 自动构建上传。
-**尚未**做 Zenodo 归档。
+Zenodo 已归档并 mint DOI，详见下方"Zenodo 归档与 DOI"。
 
 ## 发布前你需要做的
 
@@ -15,7 +15,8 @@ GitHub Pages 已启用（`main` / `/docs`），隐私政策与支持页已上线
      填进已公开的引用文件会误导他人，故先注释掉）。拿到真实 ORCID 后取消注释并填入。
 2. **确认 KEGG 合规口径**（`COMPLIANCE.md` 已按"学术/非商业调用其公开 REST 检索"写清；如需商用，请先取得 KEGG 许可）。
 3. **~~申请 GitHub 仓库~~** ✅ 已完成：<https://github.com/ZengZichao/SciToolbox>（Public）。
-4. **（可选）Zenodo 归档拿 DOI**：在 zenodo.org 用 GitHub 一键归档，给当前 commit 打 `v1.0.0` tag 并 mint DOI；把 DOI 回填到 `CITATION.cff` 与 README 徽章。
+4. **~~申请 Zenodo DOI~~** ✅ 已完成：`v1.0.0` → <https://doi.org/10.5281/zenodo.23053444>，
+   DOI 已回填到 `CITATION.cff` 与两份 README 徽章。
 
 ## 仓库结构：开发历史与公开仓库分开
 
@@ -64,8 +65,26 @@ GitHub Pages 已启用（`main` / `/docs`），隐私政策与支持页已上线
 > 产物字节随之改变，正文里预先写死的校验和立刻失效（本项目实际踩过：用户按说明执行
 > `shasum -c` 会失败）。回填完成后就不要再动这个标签。
 
-## 给审稿人/用户的关键提示
+## Zenodo 归档与 DOI
 
+- `v1.0.0` 记录：<https://doi.org/10.5281/zenodo.23053444>（版本 DOI）；跨版本聚合用 concept DOI
+  <https://doi.org/10.5281/zenodo.23053443>。以后正常发新 tag，Zenodo 会自动挂在同一 concept DOI 下成为新版本。
+- 徽章写法用 `https://zenodo.org/badge/DOI/<DOI>.svg`；`https://zenodo.org/badge/<记录号>.svg` 这种形式在新 Zenodo 上 404。
+- **Zenodo 只归档 tag 的源码 zipball，不含 `.dmg`**：这是新平台的设计（`invenio-rdm-records` 的
+  `_upload_files_to_draft` 只取 zipball），不是同步失败。二进制分发仍以 GitHub Release 为准。
+- 记录元数据来自 **tag 那个 commit 里的 `CITATION.cff`**（没有 `.zenodo.json` 时），改 `main` 上的文件不会影响
+  已生成的记录；要改元数据只能在 Zenodo 草稿阶段改，发布后不可变。
+- **某次 release 早于 Zenodo 同步开关时不会生成 DOI，而且编辑 release 无效**——Zenodo 接收器只处理
+  `action ∈ {published, released, created}` 且 `draft=false` 的 webhook，`edited` 直接被丢弃。补救办法是
+  先把该 release 转草稿再发布回来：
+  ```bash
+  gh api -X PATCH repos/ZengZichao/SciToolbox-macOS/releases/<release-id> -F draft=true
+  gh api -X PATCH repos/ZengZichao/SciToolbox-macOS/releases/<release-id> -F draft=false
+  ```
+  tag、版本号、资源 ID、下载链接都不变；但 GitHub 显示的发布日期会刷新成重新发布那天（改不回来），
+  Zenodo 记录的出版日可在草稿发布前手工填成真实发版日。
+
+## 给审稿人/用户的关键提示
 - **平台限制**：SciToolbox 目前仅支持 macOS 15+（SwiftUI）。若计划投 JOSS 等需审稿人可运行/复现的期刊，请在投稿前说明此限制，或提供录屏/构建说明；更彻底的作法是把与 GUI 无关的核心（`ToolProvider` / `APIClient` / `AccessionRouter`）抽成跨平台 Swift 包或 CLI。
 - **维护预期**：见 `CONTRIBUTING.md` 的 "Support expectations"——best-effort 维护。
 - **许可**：GPL-3.0。分发二进制时须同时提供对应源码（本仓库即源码）。

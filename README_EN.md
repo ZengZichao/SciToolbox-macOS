@@ -1,5 +1,7 @@
 # SciToolbox — macOS Research Data Toolbox
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23053444.svg)](https://doi.org/10.5281/zenodo.23053444)
+
 > A native SwiftUI macOS app that aggregates 15 public academic databases into a single search interface.
 > Open-source research utility. No login, no collection of any user personal data.
 

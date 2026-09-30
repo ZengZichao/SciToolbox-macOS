@@ -7,8 +7,9 @@ authors:
     given-names: Zichao
     # orcid: "https://orcid.org/0000-0000-0000-0000"  # 填上真实 ORCID 后取消注释
 version: 1.0.0
+doi: "10.5281/zenodo.23053444"
 license: GPL-3.0
-repository-code: "https://github.com/ZengZichao/SciToolbox"
+repository-code: "https://github.com/ZengZichao/SciToolbox-macOS"
 keywords:
   - bioinformatics
   - academic databases
