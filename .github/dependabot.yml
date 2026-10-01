@@ -8,7 +8,8 @@ updates:
     commit-message:
       prefix: "chore(deps)"
     ignore:
-      - update-types: ["version-update:semver-major"]
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       all-swift-bumps:
         patterns:
