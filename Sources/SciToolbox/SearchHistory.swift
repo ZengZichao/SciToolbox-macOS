@@ -60,10 +60,16 @@ final class SearchHistory: ObservableObject {
         save()
     }
 
-    func clearAll() {
-        entries.removeAll()
-        save()
-    }
+func clearAll() {
+entries.removeAll()
+save()
+}
+
+/// H1 备份恢复：用指定数据覆盖全部历史。
+func restoreAll(_ items: [HistoryEntry]) {
+entries = items
+save()
+}
 
     func clear(toolId: String) {
         entries.removeAll { $0.toolId == toolId }

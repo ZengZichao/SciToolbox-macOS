@@ -39,6 +39,7 @@ struct SearchScreen: View {
     // History
     @StateObject private var history = SearchHistory.shared
     @StateObject private var favorites = LocalFavorites.shared
+    @StateObject private var resultSetStore = ResultSetStore.shared
 
     // 批量选择
     @State private var selectionMode = false
@@ -51,6 +52,10 @@ struct SearchScreen: View {
     @State private var autoOpenDetail = false
     /// P2-12：GTDB 空查询域级浏览是否已预置（仅首次）
     @State private var hasPresetGTDBSearch = false
+
+    // F1：保存为结果集
+    @State private var showSaveAsResultSet = false
+    @State private var resultSetName = ""
 
     // F19：NCBI 节流提示 / F20：缓存命中提示
     @State private var showThrottleHint = false
@@ -182,6 +187,23 @@ struct SearchScreen: View {
                 selectionToolbar
             }
 
+            // F1：保存为结果集 + C1：统计条
+            if viewState == .results, let result = searchResult, !result.items.isEmpty {
+                HStack(spacing: Theme.sp2) {
+                    Button(action: { showSaveAsResultSet = true }) {
+                        Label(L10n.t(.saveAsResultSet), systemImage: "tray.badge.plus")
+                            .font(.system(size: Theme.fsCaption))
+                            .foregroundColor(Theme.accent)
+                    }
+                    .buttonStyle(PressableButtonStyle())
+                    Spacer()
+                }
+                .padding(.horizontal, Theme.sp5)
+                .padding(.vertical, Theme.sp1)
+
+                ResultStatsView(items: searchResult?.items ?? [], providerName: provider.name, accentColor: Theme.categoryColor(provider.category))
+            }
+
             // 结果内筛选条（仅在有结果时显示）
             if viewState == .results,
                let result = searchResult, !result.items.isEmpty {
@@ -297,6 +319,9 @@ struct SearchScreen: View {
         .navigationSubtitle(subtitle)
         .sheet(isPresented: $showAddToCollection) {
             AddToCollectionSheet(candidates: sheetCandidates()) { showAddToCollection = false }
+        }
+        .sheet(isPresented: $showSaveAsResultSet) {
+            saveAsResultSetSheet
         }
         .onAppear {
             if selectedPickerId.isEmpty {
@@ -662,6 +687,37 @@ struct SearchScreen: View {
             return [single]
         }
         return batchCandidates()
+    }
+
+    // MARK: - F1 保存为结果集
+
+    private var saveAsResultSetSheet: some View {
+        VStack(spacing: Theme.sp4) {
+            Text(L10n.t(.saveAsResultSet))
+                .font(.system(size: Theme.fsHeadline, weight: .semibold))
+            Text(DT.t("将当前 \(searchResult?.items.count ?? 0) 条结果保存为命名结果集", "Save current \(searchResult?.items.count ?? 0) results as a named set"))
+                .font(.system(size: Theme.fsSmall))
+                .foregroundColor(Theme.ink3)
+            TextField(L10n.t(.resultSetName), text: $resultSetName)
+                .textFieldStyle(.roundedBorder)
+            HStack {
+                Button(L10n.t(.cancelBtn)) { showSaveAsResultSet = false; resultSetName = "" }
+                    .buttonStyle(PressableButtonStyle())
+                Button(L10n.t(.save)) {
+                    let name = resultSetName.trimmingCharacters(in: .whitespaces)
+                    guard !name.isEmpty else { return }
+                    let items = (searchResult?.items ?? []).map { ResultSetItem(from: $0, toolId: provider.id, toolName: provider.name) }
+                    _ = resultSetStore.create(name: name, items: items)
+                    showSaveAsResultSet = false
+                    resultSetName = ""
+                    Clipboard.showToast(DT.t("已保存结果集", "Result set saved"))
+                }
+                .buttonStyle(PressableButtonStyle())
+                .disabled(resultSetName.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+        }
+        .padding(Theme.sp5)
+        .frame(width: 380)
     }
 
     // MARK: - P2-9 方向键导航

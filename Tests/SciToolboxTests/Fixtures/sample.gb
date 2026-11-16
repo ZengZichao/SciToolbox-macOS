@@ -1,0 +1,27 @@
+LOCUS       TESTSEQ      500 bp    DNA     linear   PRI 01-JAN-2024
+DEFINITION  Test sequence for GenBank parser.
+ACCESSION   TEST001
+VERSION     TEST001.1
+SOURCE      Homo sapiens (human)
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata.
+FEATURES             Location/Qualifiers
+     source          1..500
+                     /organism="Homo sapiens"
+                     /mol_type="genomic DNA"
+     gene            1..300
+                     /gene="testGene"
+     CDS             1..300
+                     /gene="testGene"
+                     /translation="MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSH"
+ORIGIN
+        1 atgcgtacgt tagcgcgtac gtacgtagcg cgtacgtagc gcgtacgtag cgtacgtagc
+       61 gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc
+      121 gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc
+      181 gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc
+      241 gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc
+      301 gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc
+      361 gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc
+      421 gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc gtacgtagcg cgtacgtagc
+      481 gtacgtagcg cgtacgtagc gtacgtagc gt
+//

@@ -5,15 +5,17 @@ import AppKit
 
 @main
 struct SciToolboxApp: App {
+    @Environment(\.openWindow) private var openWindow
     @StateObject private var registry = ToolRegistry.shared
     @StateObject private var toast = AppToast.shared
     @StateObject private var network = NetworkMonitor.shared
     @StateObject private var appLanguage = AppLanguage.shared
     @AppStorage("appearance") private var appearance = "system"
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(id: "main") {
             ContentView()
                 .environmentObject(registry)
                 .overlay(alignment: .bottom) {
@@ -43,7 +45,15 @@ struct SciToolboxApp: App {
         .windowToolbarStyle(.unified(showsTitle: false))
         .defaultSize(width: 1280, height: 720)
         .commands {
-            CommandGroup(replacing: .newItem) {}
+            // 3.1：恢复"New Window"菜单项，关窗后可重开主窗口（修复 Guideline 4）
+            CommandGroup(replacing: .newItem) {
+                Button(L10n.t(.newWindow)) { openWindow(id: "main") }
+                    .keyboardShortcut("n", modifiers: .command)
+            }
+            // 3.1：Window 菜单追加"Show Main Window"
+            CommandGroup(replacing: .windowList) {
+                Button(L10n.t(.showMainWindow)) { openWindow(id: "main") }
+            }
             // ⌘, 打开设置窗口（确保在所有 macOS 版本上可用）
             CommandGroup(replacing: .appSettings) {
                 Button(L10n.t(.cmdSettings)) {
@@ -249,6 +259,9 @@ struct ContentView: View {
     // P2-11：侧边栏可见性（⌘\ 切换）
     @AppStorage("sidebarVisible") private var sidebarVisible = true
 
+    // App Store 改造：首启引导
+    @AppStorage("onboardingDone") private var onboardingDone = false
+
     // A1：侧边栏分组折叠状态（会话内记忆）
     @State private var collapsedSections: Set<String> = []
 
@@ -279,6 +292,29 @@ struct ContentView: View {
                             density: density
                         ) {
                             selectTool("home")
+                        }
+
+                        // ── 本地工具（离线可计算）──
+                        let localKey = "local"
+                        SidebarSectionHeader(
+                            title: L10n.t(.localToolsSection),
+                            color: Theme.categoryColor(.localTools),
+                            density: density,
+                            badge: ToolCategory.localTools.abbreviation,
+                            isCollapsed: collapsedSections.contains(localKey),
+                            onToggle: { toggleSection(localKey) }
+                        )
+                        if !collapsedSections.contains(localKey) {
+                            SidebarItemView(
+                                icon: "function",
+                                text: L10n.t(.localToolsSection),
+                                color: Theme.categoryColor(.localTools),
+                                isSelected: selectedToolId == "localTools",
+                                density: density,
+                                isIndented: true
+                            ) {
+                                selectTool("localTools")
+                            }
                         }
 
                         // ── 分类工具组（A1：分组标题可折叠）──
@@ -348,6 +384,38 @@ struct ContentView: View {
                                 isIndented: true
                             ) {
                                 selectTool("collections")
+                            }
+                        }
+
+                        // ── 结果集（F1）──
+                        let rsKey = "resultsets"
+                        SidebarSectionHeader(
+                            title: L10n.t(.saveAsResultSet),
+                            color: Theme.accent,
+                            density: density,
+                            isCollapsed: collapsedSections.contains(rsKey),
+                            onToggle: { toggleSection(rsKey) }
+                        )
+                        if !collapsedSections.contains(rsKey) {
+                            SidebarItemView(
+                                icon: "tray.full",
+                                text: L10n.t(.saveAsResultSet),
+                                color: Theme.accent,
+                                isSelected: selectedToolId == "resultSets",
+                                density: density,
+                                isIndented: true
+                            ) {
+                                selectTool("resultSets")
+                            }
+                            SidebarItemView(
+                                icon: "doc.text.magnifyingglass",
+                                text: L10n.t(.myFiles),
+                                color: Theme.accent,
+                                isSelected: selectedToolId == "myFiles",
+                                density: density,
+                                isIndented: true
+                            ) {
+                                selectTool("myFiles")
                             }
                         }
 
@@ -500,6 +568,18 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .showShortcuts)) { _ in
             showShortcuts = true
         }
+        // App Store 改造：首启引导覆盖层
+        .overlay {
+            OnboardingView()
+        }
+        // App Store 改造：系统集成通知路由（拆分为独立 modifier 降低类型检查复杂度）
+        .modifier(AppStoreIntegrationModifier(
+            onOpenLocalTool: { selectTool("localTools") },
+            onOpenMyFiles: { selectTool("myFiles") },
+            onSmartIdentify: { text in
+                NotificationCenter.default.post(name: .smartRoute, object: nil, userInfo: ["input": text])
+            }
+        ))
         // P1-4：全库搜索
         .onReceive(NotificationCenter.default.publisher(for: .openGlobalSearch)) { note in
             if let q = note.userInfo?["query"] as? String, !q.isEmpty {
@@ -649,6 +729,9 @@ struct ContentView: View {
         case "collections": return L10n.t(.collections)
         case "settings": return L10n.t(.settings)
         case "global": return L10n.t(.globalSearch)
+        case "localTools": return L10n.t(.localToolsSection)
+        case "myFiles": return L10n.t(.myFiles)
+        case "resultSets": return L10n.t(.saveAsResultSet)
         default: return id
         }
     }
@@ -760,6 +843,18 @@ struct ContentView: View {
                     }
                 )
                 .id("global-\(globalQuery ?? "")")
+            } else if toolId == "localTools" {
+                LocalToolsListView()
+                    .id("localTools")
+                    .environmentObject(registry)
+            } else if toolId == "myFiles" {
+                // G1：我的文件页面
+                MyFilesView()
+                    .id("myFiles")
+            } else if toolId == "resultSets" {
+                // F1：结果集页面
+                ResultSetsView()
+                    .id("resultSets")
             } else if let provider = registry.find(id: toolId) {
                 SearchScreen(
                     provider: provider,
@@ -1070,13 +1165,16 @@ struct ContentView: View {
               let toolId = detailToolId,
               let model = detailModel,
               let tool = registry.find(id: toolId) else { return }
+        // B1：收藏时保存完整离线快照
+        let offline = OfflineDetail(detail: model)
         favorites.toggle(
             toolId: toolId,
             toolName: tool.name,
             itemId: itemId,
             title: model.headerTitle,
             subtitle: model.headerSubtitle,
-            snapshot: Self.favoriteSnapshot(from: model)
+            snapshot: Self.favoriteSnapshot(from: model),
+            offlineDetail: offline
         )
     }
 
@@ -1322,6 +1420,12 @@ extension Notification.Name {
     static let showShortcuts = Notification.Name("showShortcuts")
     /// P1-4：全库搜索（userInfo["query"]）。
     static let openGlobalSearch = Notification.Name("openGlobalSearch")
+    /// App Store 改造：打开本地工具页（Dock 菜单 / URL Scheme / Services 用）。
+    static let openLocalTool = Notification.Name("openLocalTool")
+    /// App Store 改造：打开"我的文件"页（文件双击导入用）。
+    static let openMyFiles = Notification.Name("openMyFiles")
+    /// App Store 改造：智能识别（Services / URL Scheme 用）。
+    static let smartIdentifyText = Notification.Name("smartIdentifyText")
 }
 
 // MARK: - ShortcutReferenceSheet（快捷键速查，P2-17 / G21 / G22）
@@ -1392,5 +1496,88 @@ struct ShortcutReferenceSheet: View {
             }
         }
         .frame(width: 520, height: 380)
+    }
+}
+
+// MARK: - AppDelegate（系统集成注册入口：Dock 菜单 / 文件打开 / URL Scheme / Services）
+
+/// App Store 改造 3.1+：NSApplicationDelegate 适配器，用于注册系统集成能力。
+/// - D4: Dock 菜单（applicationDockMenu）
+/// - G2: 文件双击打开（application(_:open:)）
+/// - G3: URL Scheme（application(_:open:urls:) — SwiftUI .onOpenURL 也可，此处做后备）
+/// - G4: NSServices（readSelectionFromPasteboard）
+final class AppDelegate: NSObject, NSApplicationDelegate {
+
+    // D4: Dock 菜单 —— 右键 Dock 图标显示工具直达 + 新建窗口
+    func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
+        let menu = NSMenu()
+
+        // 新建窗口
+        let newWindowItem = NSMenuItem(title: L10n.t(.newWindow), action: #selector(dockNewWindow(_:)), keyEquivalent: "n")
+        newWindowItem.target = self
+        menu.addItem(newWindowItem)
+        menu.addItem(.separator())
+
+        // 本地工具直达
+        let localToolsItem = NSMenuItem(title: L10n.t(.localToolsSection), action: #selector(dockOpenLocalTools(_:)), keyEquivalent: "")
+        localToolsItem.target = self
+        menu.addItem(localToolsItem)
+
+        // 我的文件
+        let myFilesItem = NSMenuItem(title: L10n.t(.myFiles), action: #selector(dockOpenMyFiles(_:)), keyEquivalent: "")
+        myFilesItem.target = self
+        menu.addItem(myFilesItem)
+        menu.addItem(.separator())
+
+        // 全部 15 库直达
+        let submenu = NSMenu()
+        for provider in ToolRegistry.shared.providers {
+            let item = NSMenuItem(title: provider.name, action: #selector(dockOpenTool(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = provider.id
+            submenu.addItem(item)
+        }
+        let toolsItem = NSMenuItem(title: L10n.t(.toolMenu), action: nil, keyEquivalent: "")
+        toolsItem.submenu = submenu
+        menu.addItem(toolsItem)
+
+        return menu
+    }
+
+    @objc private func dockNewWindow(_ sender: Any?) {
+        NotificationCenter.default.post(name: .navigateToTool, object: nil, userInfo: ["toolId": "home"])
+    }
+
+    @objc private func dockOpenLocalTools(_ sender: Any?) {
+        NotificationCenter.default.post(name: .openLocalTool, object: nil)
+    }
+
+    @objc private func dockOpenMyFiles(_ sender: Any?) {
+        NotificationCenter.default.post(name: .openMyFiles, object: nil)
+    }
+
+    @objc private func dockOpenTool(_ sender: NSMenuItem) {
+        guard let toolId = sender.representedObject as? String else { return }
+        NotificationCenter.default.post(name: .navigateToTool, object: nil, userInfo: ["toolId": toolId])
+    }
+
+    // G2: 文件双击打开
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls {
+            // 路由到文件导入
+            NotificationCenter.default.post(name: .openMyFiles, object: nil, userInfo: ["url": url])
+        }
+    }
+
+    // G4: NSServices — 从任意 App 选中文本右键「在 SciToolbox 中识别」
+    @objc func identifyInSciToolbox(_ pboard: NSPasteboard, userData: String?, error: AutoreleasingUnsafeMutablePointer<NSString?>) {
+        guard let text = pboard.string(forType: .string), !text.isEmpty else {
+            error.pointee = "No text found" as NSString
+            return
+        }
+        DispatchQueue.main.async {
+            NSApp.activate(ignoringOtherApps: true)
+            NotificationCenter.default.post(name: .smartIdentifyText, object: nil, userInfo: ["text": text])
+        }
     }
 }

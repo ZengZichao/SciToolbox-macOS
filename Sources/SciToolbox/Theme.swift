@@ -106,6 +106,7 @@ enum Theme {
         case .protein:          return ((0.72, 0.38, 0.05), (0.95, 0.65, 0.30))
         case .functionCategory: return ((0.05, 0.45, 0.45), (0.25, 0.75, 0.75))
         case .literature:       return ((0.52, 0.28, 0.66), (0.70, 0.45, 0.85))
+        case .localTools:       return ((0.40, 0.20, 0.60), (0.65, 0.50, 0.90))
         }
     }
 

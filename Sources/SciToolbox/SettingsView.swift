@@ -5,6 +5,8 @@ import UniformTypeIdentifiers
 // MARK: - SettingsView (minimal)
 
 struct SettingsView: View {
+    @StateObject private var clipboardMonitor = ClipboardMonitor.shared
+    @StateObject private var spotlightIndexer = SpotlightIndexer.shared
     @AppStorage("appearance") private var appearance: String = "system"
     @AppStorage("cacheEnabled") private var cacheEnabled: Bool = true
     /// A3：侧边栏密度（此前已实现却不可达，补上设置 UI）
@@ -92,6 +94,39 @@ struct SettingsView: View {
                 // E16：重置应用
                 Button(L10n.t(.resetApp), role: .destructive) {
                     confirmResetAll = true
+                }
+            }
+
+            // H2：数据与隐私分组
+            Section(DT.t("数据与隐私", "Data & Privacy")) {
+                Text(L10n.t(.dataStaysLocal))
+                    .font(.system(size: Theme.fsSmall))
+                    .foregroundColor(Theme.ink3)
+
+                Button(L10n.t(.backupNow)) {
+                    BackupManager.shared.exportArchive()
+                }
+
+                Button(L10n.t(.restoreFrom)) {
+                    BackupManager.shared.restoreFromBackup()
+                }
+
+                Button(L10n.t(.eraseLocalData), role: .destructive) {
+                    confirmResetAll = true
+                }
+
+                // D1：剪贴板智能识别（默认关闭）
+                Toggle(L10n.t(.clipboardMonitor), isOn: Binding(
+                    get: { clipboardMonitor.isEnabled },
+                    set: { clipboardMonitor.setEnabled($0) }
+                ))
+                .onChange(of: clipboardMonitor.isEnabled) { _, enabled in
+                    if enabled { clipboardMonitor.start() } else { clipboardMonitor.stop() }
+                }
+
+                // D3：Spotlight 索引状态
+                if spotlightIndexer.indexedCount > 0 {
+                    LabeledContent(L10n.t(.spotlightEnabled), value: "\(spotlightIndexer.indexedCount)")
                 }
             }
 

@@ -8,6 +8,8 @@ enum ToolCategory: String, CaseIterable, Identifiable {
     case protein = "protein"
     case functionCategory = "function"
     case literature = "literature"
+    /// 3.2：本地工具分类（离线可计算）。
+    case localTools = "local"
 
     var id: String { rawValue }
     var name: String {
@@ -17,6 +19,7 @@ enum ToolCategory: String, CaseIterable, Identifiable {
         case .protein: L10n.t(.catProtein)
         case .functionCategory: L10n.t(.catFunction)
         case .literature: L10n.t(.catLiterature)
+        case .localTools: L10n.t(.catLocalTools)
         }
     }
     /// 单字缩写（H24：分类线索在颜色之外叠加文本标签，色觉障碍用户也能区分）。
@@ -27,6 +30,7 @@ enum ToolCategory: String, CaseIterable, Identifiable {
         case .protein: L10n.t(.catAbbrProtein)
         case .functionCategory: L10n.t(.catAbbrFunction)
         case .literature: L10n.t(.catAbbrLiterature)
+        case .localTools: L10n.t(.catAbbrLocalTools)
         }
     }
 }

@@ -35,6 +35,13 @@ struct HomeView: View {
                 .padding(.top, Theme.sp4)
             GlobalSearchField()
                 .padding(.top, Theme.sp2)
+
+            // I4：快捷动作
+            quickActionsBlock
+
+            // I2：示例数据入口
+            sampleDataBlock
+
             recentQueriesBlock
                 favoritesBlock
                 categoriesBlock
@@ -120,6 +127,115 @@ struct HomeView: View {
         }
         .padding(.horizontal, Theme.sp6)
         .padding(.top, Theme.sp6)
+    }
+
+    // MARK: - I4 快捷动作
+
+    @ViewBuilder
+    private var quickActionsBlock: some View {
+        VStack(alignment: .leading, spacing: Theme.sp3) {
+            sectionHeader(title: DT.t("快捷动作", "Quick Actions"), actionTitle: nil, action: nil)
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+            ], spacing: Theme.sp3) {
+                quickActionCard(icon: "function", title: L10n.t(.localToolsSection), color: Theme.categoryColor(.localTools)) {
+                    onToolSelected?("localTools")
+                }
+                quickActionCard(icon: "globe.asia.australia", title: L10n.t(.globalSearch), color: Theme.accent) {
+                    onToolSelected?("global")
+                }
+                quickActionCard(icon: "tray.full", title: L10n.t(.saveAsResultSet), color: Theme.accent) {
+                    onToolSelected?("resultSets")
+                }
+                quickActionCard(icon: "doc.text.magnifyingglass", title: L10n.t(.myFiles), color: Theme.categoryColor(.localTools)) {
+                    onToolSelected?("myFiles")
+                }
+            }
+            .padding(.horizontal, Theme.sp6)
+        }
+    }
+
+    private func quickActionCard(icon: String, title: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: Theme.sp3) {
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                    .foregroundColor(color)
+                    .frame(width: 28, height: 28)
+                    .background(color.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.radiusSm))
+                Text(title)
+                    .font(.system(size: Theme.fsBody))
+                    .foregroundColor(Theme.ink)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 9, weight: .light))
+                    .foregroundColor(Theme.ink4)
+            }
+            .padding(.horizontal, Theme.sp3)
+            .padding(.vertical, Theme.sp3)
+            .background(Theme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.radiusMd))
+            .overlay(RoundedRectangle(cornerRadius: Theme.radiusMd).strokeBorder(Theme.line, lineWidth: 0.5))
+        }
+        .buttonStyle(PressableButtonStyle())
+        .accessibilityLabel(title)
+    }
+
+    // MARK: - I2 示例数据入口
+
+    @State private var showSampleDetail: OfflineDetail?
+
+    @ViewBuilder
+    private var sampleDataBlock: some View {
+        VStack(alignment: .leading, spacing: Theme.sp3) {
+            sectionHeader(title: DT.t("示例与教学", "Samples & Tutorials"), actionTitle: nil, action: nil)
+            VStack(spacing: 0) {
+                ForEach(SampleData.allSamples, id: \.0) { sample in
+                    Button(action: { showSampleDetail = sample.1 }) {
+                        HStack(spacing: Theme.sp3) {
+                            Image(systemName: "book.closed")
+                                .font(.system(size: 11))
+                                .foregroundColor(Theme.categoryColor(.localTools))
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(sample.0)
+                                    .font(.system(size: Theme.fsSmall))
+                                    .foregroundColor(Theme.ink)
+                                Text(L10n.t(.sampleDataHint))
+                                    .font(.system(size: Theme.fsCaption))
+                                    .foregroundColor(Theme.ink3)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 9, weight: .light))
+                                .foregroundColor(Theme.ink4)
+                        }
+                        .padding(.horizontal, Theme.sp3)
+                        .padding(.vertical, Theme.sp3)
+                    }
+                    .buttonStyle(PressableButtonStyle())
+                    thinDivider()
+                }
+            }
+            .cardStyle()
+            .padding(.horizontal, Theme.sp6)
+        }
+        .sheet(item: Binding(
+            get: { showSampleDetail.map { SampleDetailWrapper(detail: $0) } },
+            set: { showSampleDetail = $0?.detail }
+        )) { wrapper in
+            KeyValueDetail(
+                model: wrapper.detail.toDetailModel(),
+                accentColor: Theme.categoryColor(.localTools),
+                onCopy: { Clipboard.copy($0, tip: L10n.t(.copied)) },
+                onAction: { _ in },
+                onXLink: { link in
+                    NotificationCenter.default.post(name: .navigateToTool, object: nil, userInfo: ["toolId": link.toolId, "query": link.query, "autoDetail": true])
+                }
+            )
+            .frame(minWidth: 500, minHeight: 400)
+        }
     }
 
     // MARK: - Recent queries
@@ -415,6 +531,12 @@ struct HomeView: View {
 }
 
 // MARK: - ToolTile (minimal: icon + text, no card, hover highlight)
+
+private struct SampleDetailWrapper: Identifiable {
+    let detail: OfflineDetail
+    var id: String { detail.headerTitle }
+}
+
 
 struct ToolTile: View {
     let provider: any ToolProvider

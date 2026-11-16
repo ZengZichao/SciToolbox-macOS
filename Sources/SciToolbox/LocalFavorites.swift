@@ -21,7 +21,8 @@ final class LocalFavorites: ObservableObject {
     }
 
     /// 收藏时同时保存详情快照（key/value 摘要），便于收藏夹离线展示更多上下文。
-    func toggle(toolId: String, toolName: String, itemId: String, title: String, subtitle: String? = nil, snapshot: [String: String]? = nil, note: String? = nil) {
+    /// B1：同时保存完整 OfflineDetail，断网可展示全部字段。
+    func toggle(toolId: String, toolName: String, itemId: String, title: String, subtitle: String? = nil, snapshot: [String: String]? = nil, note: String? = nil, offlineDetail: OfflineDetail? = nil) {
         if let idx = favorites.firstIndex(where: { $0.itemId == itemId && $0.toolId == toolId }) {
             favorites.remove(at: idx)
         } else {
@@ -34,6 +35,7 @@ final class LocalFavorites: ObservableObject {
                 subtitle: subtitle,
                 note: note,
                 snapshot: snapshot,
+                offlineDetail: offlineDetail,
                 timestamp: Date()
             )
             favorites.insert(fav, at: 0)
@@ -97,6 +99,12 @@ final class LocalFavorites: ObservableObject {
         save()
     }
 
+    /// H1 备份恢复：用指定数据覆盖全部收藏。
+    func restoreAll(_ items: [FavoriteItem]) {
+        favorites = items
+        save()
+    }
+
     // MARK: - Export
 
     /// Export favorites as plain text (human-readable)
@@ -152,6 +160,8 @@ struct FavoriteItem: Identifiable, Codable, Hashable {
     var note: String?
     /// 收藏时抓取的详情快照（key/value 摘要），离线时也能展示上下文。
     let snapshot: [String: String]?
+    /// B1：完整离线快照（OfflineDetail），断网时可展示全部字段。
+    var offlineDetail: OfflineDetail?
     let timestamp: Date
 
     var relativeTime: String {

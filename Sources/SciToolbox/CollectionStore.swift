@@ -60,10 +60,16 @@ final class CollectionStore: ObservableObject {
         save()
     }
 
-    func clearAll() {
-        collections.removeAll()
-        save()
-    }
+func clearAll() {
+collections.removeAll()
+save()
+}
+
+/// H1 备份恢复：用指定数据覆盖全部集合。
+func restoreAll(_ items: [SciCollection]) {
+collections = items
+save()
+}
 
     // MARK: - Entry 级操作
 

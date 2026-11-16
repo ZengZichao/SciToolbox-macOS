@@ -63,6 +63,22 @@ enum L10n: String {
     case shortcutCmdK, shortcutCmdF, shortcutCmdBracket, shortcutCmdBackslash, shortcutCmdSlash, shortcutCmdComma, shortcutEsc, shortcutArrows, shortcutCmdClick, shortcutCmdKDesc, shortcutCmdFDesc, shortcutCmdBracketDesc, shortcutCmdBackslashDesc, shortcutCmdSlashDesc, shortcutCmdCommaDesc, shortcutEscDesc, shortcutArrowsDesc, shortcutCmdClickDesc, shortcutRefTitle
     case catTaxonomy, catGene, catProtein, catFunction, catLiterature, catAbbrTaxonomy, catAbbrGene, catAbbrProtein, catAbbrFunction, catAbbrLiterature
     case densityCompact, densityNormal, densitySpacious
+    // MARK: - App Store 过审改造新增键（3.3 一次性清单）
+    case newWindow, showMainWindow
+    case localToolsSection, catLocalTools, catAbbrLocalTools, offlineBadge
+    case localToolInputPlaceholder, runTool, toolResult
+    case reverseComplement, gcContent, translate, lengthStats
+    case fastaWrap, fastaDedup, batchIdentify, citationPreview
+    case alignGlobal, alignLocal, alignResult
+    case molWeight, theoreticalPi, extinctionCoeff
+    case saveOfflineDetail, localSearchPlaceholder, localSearchEmpty
+    case resultStats, saveAsResultSet, resultSetName
+    case union, intersect, diff
+    case importFiles, myFiles
+    case backupNow, restoreFrom, dataStaysLocal, eraseLocalData
+    case clipboardMonitor
+    case onboardingTitle1, onboardingTitle2, onboardingTitle3, sampleDataHint
+    case spotlightEnabled, dataSourcedWatermark
 
     static func t(_ key: L10n) -> String {
         switch AppLanguage.currentLang { case .zh: return zhTable[key.rawValue] ?? key.rawValue; case .en: return enTable[key.rawValue] ?? key.rawValue }
@@ -91,6 +107,24 @@ enum L10n: String {
         "exportAll": "导出全部", "deletedCollection": "已删除集合", "openCollectionA11y": "打开 %@", "deleteCollectionA11y": "删除集合 %@", "editEntryNoteA11y": "编辑 %@ 的备注", "openInToolA11y": "在 %@ 中打开 %@", "removeFromCollectionA11y": "从集合中移除", "exportCompareTableA11y": "导出对比表", "viewDetailA11y": "查看 %@ 详情", "resultCountShort": "%d 条", "rerunQueryA11y": "重新查询 %@", "openFavoritesA11y": "打开收藏夹查看 %@", "browseCategoryA11y": "浏览 %@ 下的工具", "toastWithUndo": "%@，可撤销", "clearLocalFilterA11y": "清除结果内筛选", "hint": "提示", "detailLoadFailed": "详情加载失败：%@", "viewEntryA11y": "查看 %@", "renameCollection": "重命名集合", "compareNoEntries": "该集合没有可核对的实体", "subtitleField": "副标题", "newCollectionDots": "新建集合…",
         "csvAccession": "编号", "csvTitle": "标题", "csvSubtitle": "副标题", "csvSource": "来源库", "csvMeta": "其他信息",
         "batchFavorited": "已收藏 %d 条", "copyFailed": "复制失败，请重试", "deleteHistoryAction": "删除此记录",
+        // App Store 过审改造新增
+        "newWindow": "新建窗口", "showMainWindow": "显示主窗口",
+        "localToolsSection": "本地工具", "catLocalTools": "本地工具", "catAbbrLocalTools": "本", "offlineBadge": "离线可用",
+        "localToolInputPlaceholder": "输入序列或文本…", "runTool": "运行", "toolResult": "结果",
+        "reverseComplement": "反向互补", "gcContent": "GC 含量", "translate": "翻译（蛋白质）", "lengthStats": "长度与组成",
+        "fastaWrap": "FASTA 重排", "fastaDedup": "去重", "batchIdentify": "批量识别", "citationPreview": "引用预览",
+        "alignGlobal": "全局比对", "alignLocal": "局部比对", "alignResult": "比对结果",
+        "molWeight": "分子量", "theoreticalPi": "理论等电点", "extinctionCoeff": "消光系数",
+        "saveOfflineDetail": "已保存离线详情", "localSearchPlaceholder": "搜索收藏/集合/结果集…", "localSearchEmpty": "仅本地数据（断网可用）",
+        "resultStats": "结果统计", "saveAsResultSet": "保存为结果集", "resultSetName": "结果集名称",
+        "union": "并集", "intersect": "交集", "diff": "差集",
+        "importFiles": "导入文件…", "myFiles": "我的文件",
+        "backupNow": "备份全部数据", "restoreFrom": "从备份恢复", "dataStaysLocal": "数据仅存本机", "eraseLocalData": "一键清空本地数据",
+        "clipboardMonitor": "剪贴板智能识别",
+        "onboardingTitle1": "不只是浏览器", "onboardingTitle2": "离线也能用", "onboardingTitle3": "属于你的研究资产",
+        "sampleDataHint": "示例条目 · 离线可读",
+        "spotlightEnabled": "已索引到 Spotlight",
+        "dataSourcedWatermark": "数据来源：%@ · 导出时间：%@",
     ]
 
     // MARK: - English table
@@ -113,5 +147,23 @@ enum L10n: String {
         "exportAll": "Export All", "deletedCollection": "Collection deleted", "openCollectionA11y": "Open %@", "deleteCollectionA11y": "Delete collection %@", "editEntryNoteA11y": "Edit note for %@", "openInToolA11y": "Open %@ in %@", "removeFromCollectionA11y": "Remove from collection", "exportCompareTableA11y": "Export comparison table", "viewDetailA11y": "View details of %@", "resultCountShort": "%d hits", "rerunQueryA11y": "Search %@ again", "openFavoritesA11y": "Open Favorites to view %@", "browseCategoryA11y": "Browse tools in %@", "toastWithUndo": "%@ (undo available)", "clearLocalFilterA11y": "Clear in-result filter", "hint": "Note", "detailLoadFailed": "Failed to load details: %@", "viewEntryA11y": "View %@", "renameCollection": "Rename Collection", "compareNoEntries": "This collection has no entries to verify", "subtitleField": "Subtitle", "newCollectionDots": "New Collection…",
         "csvAccession": "Accession", "csvTitle": "Title", "csvSubtitle": "Subtitle", "csvSource": "Source", "csvMeta": "Meta",
         "batchFavorited": "Added %d to favorites", "copyFailed": "Copy failed, please retry", "deleteHistoryAction": "Delete this entry",
+        // App Store review improvements
+        "newWindow": "New Window", "showMainWindow": "Show Main Window",
+        "localToolsSection": "Local Tools", "catLocalTools": "Local Tools", "catAbbrLocalTools": "L", "offlineBadge": "Offline",
+        "localToolInputPlaceholder": "Enter sequence or text…", "runTool": "Run", "toolResult": "Result",
+        "reverseComplement": "Reverse Complement", "gcContent": "GC Content", "translate": "Translate (Protein)", "lengthStats": "Length & Composition",
+        "fastaWrap": "FASTA Reformat", "fastaDedup": "Deduplicate", "batchIdentify": "Batch Identify", "citationPreview": "Citation Preview",
+        "alignGlobal": "Global Align", "alignLocal": "Local Align", "alignResult": "Alignment Result",
+        "molWeight": "Mol. Weight", "theoreticalPi": "Theoretical pI", "extinctionCoeff": "Extinction Coeff.",
+        "saveOfflineDetail": "Offline detail saved", "localSearchPlaceholder": "Search favorites / collections / result sets…", "localSearchEmpty": "Local data only (works offline)",
+        "resultStats": "Result Statistics", "saveAsResultSet": "Save as Result Set", "resultSetName": "Result Set Name",
+        "union": "Union", "intersect": "Intersect", "diff": "Difference",
+        "importFiles": "Import Files…", "myFiles": "My Files",
+        "backupNow": "Back Up All Data", "restoreFrom": "Restore from Backup", "dataStaysLocal": "Data Stays On This Mac", "eraseLocalData": "Erase All Local Data",
+        "clipboardMonitor": "Clipboard Smart Detect",
+        "onboardingTitle1": "More than a browser", "onboardingTitle2": "Works offline", "onboardingTitle3": "Your research assets",
+        "sampleDataHint": "Sample entry · readable offline",
+        "spotlightEnabled": "Indexed in Spotlight",
+        "dataSourcedWatermark": "Source: %@ · Exported: %@",
     ]
 }
