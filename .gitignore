@@ -36,3 +36,6 @@ AppStoreScreenshots/
 # 不入库也不进历史。文件保留在本地当操作手册用。
 PUBLISHING-APPSTORE.md
 APPSTORE-METADATA.md
+
+# 发布清单/操作手册：属仓外过程文档，不入库也不进历史
+PUBLISHING.md
